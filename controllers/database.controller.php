@@ -54,7 +54,6 @@ abstract class DatabaseController
 
     function getAllWith($with){
         $rows = $this->getAll();
-        $sub_rows = [];
         foreach($with as $table){
             $dbs = new DatabaseService($table);
             $table_rows = $dbs->selectAll();
@@ -84,6 +83,7 @@ abstract class DatabaseController
     }
 
     public abstract function affectDataToRow(&$row, $sub_rows); //Attention au & devant $row
+    //TODO array_values devant array_filter !
 
     public function create(){
         return "Insert a new row in table $this->table with values : " . 
