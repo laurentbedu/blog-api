@@ -50,6 +50,13 @@ class DatabaseService
         return $rows;
     }
 
+    public function selectWhere($where = null){
+        $sql = "SELECT * FROM $this->table". (isset($where) ?? " WHERE $where" ) . " ;";
+        $resp = $this->query($sql, [0]);
+        $rows = $resp->statement->fetchAll(PDO::FETCH_CLASS);
+        return $rows;
+    }
+
     public function selectOne($id){
         $sql = "SELECT * FROM $this->table WHERE is_deleted = ? AND Id_$this->table = ?";
         $resp = $this->query($sql, [0, $id]);

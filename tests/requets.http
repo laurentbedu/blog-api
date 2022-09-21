@@ -1,29 +1,29 @@
-@table = article
-@id = 2
-@body = {"with": ["appuser", "theme"]}
+@table = tag
+@id = 1
+@body = {"with": [{"article":"article_tag"}] }
 
+### init controllers
 GET http://blog.api/init
 
-###
-
+### get all
 GET http://blog.api/{{table}}
 
-###
+### get one
 GET http://blog.api/{{table}}/{{id}}
 
-###
+### 
 POST http://blog.api/{{table}}
 Content-Type: application/json
 
 {{body}}
 
-###
+### get all with relations
 POST http://blog.api/{{table}}/0
 Content-Type: application/json
 
 {{body}}
 
-###
+### get one with relations
 POST http://blog.api/{{table}}/{{id}}
 Content-Type: application/json
 
