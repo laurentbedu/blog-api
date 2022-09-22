@@ -51,7 +51,7 @@ class DatabaseService
     }
 
     public function selectWhere($where = null){
-        $sql = "SELECT * FROM $this->table". (isset($where) ?? " WHERE $where" ) . " ;";
+        $sql = "SELECT * FROM $this->table WHERE ". (isset($where) ? "$where" : "1" ) . " ;";
         $resp = $this->query($sql, [0]);
         $rows = $resp->statement->fetchAll(PDO::FETCH_CLASS);
         return $rows;

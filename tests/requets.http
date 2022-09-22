@@ -1,9 +1,18 @@
 @table = tag
-@id = 1
-@body = {"with": [{"article":"article_tag"}] }
+@id = 3
+@body = {"image":[], "appUser":1, "tag":[]  }
 
 ### init controllers
 GET http://blog.api/init
+
+### tests
+POST http://blog.api/test/{{id}}
+Content-Type: application/json
+
+{{body}}
+
+### specific ThemeDetail
+GET http://blog.api/themeDetail/{{id}}
 
 ### get all
 GET http://blog.api/{{table}}
