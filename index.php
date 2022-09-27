@@ -12,6 +12,12 @@
     }
     
     header("Access-Control-Allow-Origin: $origin");
+    
+    header("Access-Control-Allow-Methods: *");
+    if($_SERVER['REQUEST_METHOD'] == "OPTIONS"){
+        header('HTTP/1.0 200 OK');
+        die;
+    }
 
     require_once 'services/database.service.php';
     require_once 'controllers/database.controller.php';

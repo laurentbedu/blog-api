@@ -71,7 +71,7 @@
             $query_resp = $dbs->query("DESCRIBE $k",[]);
             $columns = $query_resp->statement->fetchAll(PDO::FETCH_COLUMN);
             $fk = "Id_".$table;
-            
+
             if(is_array($row)){
                 $bp = true;
             }
@@ -125,56 +125,73 @@
     }
 
 
-    public function getOne($id){
-        $dbs = new DatabaseService($this->table);
+    // public function getOne($id){
+    //     $dbs = new DatabaseService($this->table);
+    //     $row = $dbs->selectOne($id);
+    //     foreach($this->body as $k=>$v){
+    //         $this->addDataToRow($row, $k, $v);
+    //     }
+    //     return $row;
+    // }
+
+    public function getOne($id, $table = null, $body = null){
+        
+        $table = $table ?? $this->table;
+        $body = $body ?? $this->body;
+        $dbs = new DatabaseService($table);
         $row = $dbs->selectOne($id);
-        foreach($this->body as $k=>$v){
-            $this->addDataToRow($row, $k, $v);
-            // $type = $v['type'];
-            // //1
-            // if($type==1){
-            //     $dbs = new DatabaseService($k);
-            //     $fk = "Id_".$k;
-            //     $sId = $row->$fk;
-            //     $sRow = $dbs->selectOne($sId);
-            //     $row->$k = $sRow;
-            // }
-            // //[]
-            // if(is_array($type)){
-            //     $dbs = new DatabaseService($k);
-            //     $query_resp = $dbs->query("DESCRIBE $k",[]);
-            //     $columns = $query_resp->statement->fetchAll(PDO::FETCH_COLUMN);
-            //     $fk = "Id_".$this->table;
-            //     if (in_array($fk, $columns)){
-            //         $sRow = $dbs->selectWhere("is_deleted = 0 AND $fk = $id");
-            //     }
-            //     else{
-            //         $query_resp = $dbs->query("SELECT table_name FROM information_schema.tables
-            //                          WHERE table_schema = ?", ['db_blog']);
-            //         $tables = $query_resp->statement->fetchAll(PDO::FETCH_COLUMN);
-            //         $rel_table = $this->table."_".$k;
-            //         if(!in_array($rel_table,$tables)){
-            //             $rel_table = $k."_".$this->table;
-            //         }
-            //         $dbs = new DatabaseService($rel_table);
-            //         $fk = "Id_".$this->table;
-            //         $rel_rows = $dbs->selectWhere("$fk = $id");
-            //         $ids = array_column($rel_rows, "Id_".$k);
-            //         $ids = '('.implode( ',', $ids ).')';
-            //         $dbs = new DatabaseService($k);
-            //         $sRow = $dbs->selectWhere("is_deleted = 0 AND Id_$k IN $ids");
-            //         $bp = true;
-            //     }
-            //     $name = $k."_list";
-            //     $row->$name = $sRow;
-            // }
+        foreach($body as $k=>$v){
+            $type = is_array($v) ? $v['type'] : null;
+            //1
+            if($type==1){
+                $row->addOne($k);
+                if(count($v)>1){
+                    if(!is_array($row->$k)){
+                        $pk = "Id_$k";
+                        $row->$k = $this->getOne($row->$k->$pk, $k, $v);
+                    }
+                    else{
+                        //TODO Used???
+                        foreach($row->$k as &$item){
+                            $pk = "Id_$k";
+                            unset($v['type']);
+                            $item = $this->getOne($item->$pk, $k, $v);
+                        }
+                    }
+                }
+            }
+            if(is_array($type)){
+                $row->addMany($k);
+                $rk = $k."_list";
+                if(count($v)>1){
+                    if(!is_array($row->$rk)){
+                        $pk = "Id_$k";
+                        $row->$k = $this->getOne($row->$k->$pk, $k, $v);
+                        //TODO Used???
+                    }
+                    else{
+                        foreach($row->$rk as &$item){
+                            $pk = "Id_$k";
+                            unset($v['type']);
+                            $item = $this->getOne($item->$pk, $k, $v);
+                        }
+                    }
+                }
+            }
         }
         return $row;
     }
-    public function getAll(){
-        $dbs = new DatabaseService($this->table);
-
-        return true;
+    public function getAll($table = null, $body = null){
+        $table = $table ?? $this->table;
+        $body = $body ?? $this->body;
+        $dbs = new DatabaseService($table);
+        $rows = $dbs->selectAll();
+        foreach($rows as &$row){
+            $pk = "Id_".$table;
+            $row = $this->getOne($row->$pk);
+        }
+        //TODO loop ? 
+        return $rows;
     }
 
 }?>

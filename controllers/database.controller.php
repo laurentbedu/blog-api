@@ -96,7 +96,8 @@ abstract class DatabaseController
                 $final_table = key($table);
                 $through_table = $table[$final_table];
                 $dbs = new DatabaseService($through_table);
-                $through_table_rows = $dbs->selectWhere();
+                $pk = "Id_".$this->table;
+                $through_table_rows = $dbs->selectWhere($pk." = ?", [$row->$pk]);
                 $dbs = new DatabaseService($final_table);
                 $final_table_rows = $dbs->selectAll();
                 foreach($through_table_rows as $through_table_row){
@@ -122,13 +123,22 @@ abstract class DatabaseController
 
 
     public function create(){
-        return "Insert a new row in table $this->table with values : " . 
-            urldecode(http_build_query($this->body, '', ', '));
+        // return "Insert a new row in table $this->table with values : " . 
+        //     urldecode(http_build_query($this->body, '', ', '));
+        $dbs = new DatabaseService($this->table);
+        $row = $dbs->insertOne($this->body);
+        return $row;
     }
 
     public function update($id){
-        return "Update row with id = $id in table $this->table with values : ". 
-            urldecode(http_build_query($this->body, '', ', '));
+        // return "Update row with id = $id in table $this->table with values : ". 
+        //     urldecode(http_build_query($this->body, '', ', '));
+        $dbs = new DatabaseService($this->table);
+        if($id != $this->body["Id_$this->table"]){
+            return false;
+        }
+        $row = $dbs->updateOne($this->body);
+        return $row;
     }
 
     public function softDelete($id){
