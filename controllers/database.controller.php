@@ -138,7 +138,12 @@ abstract class DatabaseController
     }
 
     public function softDelete($id){
-        return "Delete (soft) row with id = $id in table $this->table";
+        $dbs = new DatabaseService($this->table);
+        $row = $dbs->updateOneV2(["Id_$this->table" => $id,"is_deleted" => 1]);
+        if(isset($row) && $row == false){
+            return false;
+        }
+        return !isset($row);
     }
 
     public function hardDelete($id){
