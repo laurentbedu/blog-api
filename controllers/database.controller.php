@@ -106,7 +106,9 @@ abstract class DatabaseController
                             $prop = 'Id_'.$final_table;
                             return $item->{$prop} == $through_table_row->{$prop};
                         });
-                    $through_table_row->$final_table = count($row_to_add) == 1 ? array_pop($row_to_add) : null;
+                    if(count($row_to_add) == 1){
+                        $through_table_row->$final_table = array_pop($row_to_add);
+                    }
                 }
                 $sub_rows[$final_table] = $through_table_rows;
                 continue;
