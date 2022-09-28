@@ -123,21 +123,17 @@ abstract class DatabaseController
 
 
     public function create(){
-        // return "Insert a new row in table $this->table with values : " . 
-        //     urldecode(http_build_query($this->body, '', ', '));
         $dbs = new DatabaseService($this->table);
-        $row = $dbs->insertOne($this->body);
+        $row = $dbs->insertOneV2($this->body);
         return $row;
     }
 
     public function update($id){
-        // return "Update row with id = $id in table $this->table with values : ". 
-        //     urldecode(http_build_query($this->body, '', ', '));
         $dbs = new DatabaseService($this->table);
         if($id != $this->body["Id_$this->table"]){
             return false;
         }
-        $row = $dbs->updateOne($this->body);
+        $row = $dbs->updateOneV2($this->body);
         return $row;
     }
 

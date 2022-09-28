@@ -85,8 +85,8 @@ class DatabaseService
     function insertOne($body = []){ //TODO insertMany
         $columns = "";
         $values = "";
-        if(isset($fields["Id_$this->table"])){
-            unset($fields["Id_$this->table"]);
+        if(isset($body["Id_$this->table"])){
+            unset($body["Id_$this->table"]);
         }
         $valuesToBind = array();
         foreach ($body as $k => $v) {
@@ -106,11 +106,30 @@ class DatabaseService
         return false;
     }
 
+    public function insertOneV2($body = []){ //Version condensée
+        if(isset($body["Id_$this->table"])){
+            unset($body["Id_$this->table"]);
+        }
+        $columns = implode(",", array_keys($body));
+        $values = implode(",", array_map(function (){ return "?"; },$body));
+        $valuesToBind = array_values($body);
+        $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
+        $resp = $this->query($sql, $valuesToBind);
+        if($resp->result && $resp->statment->rowCount() == 1){
+            $insertedId = self::$connection->lastInsertId();
+            $row = $this->selectOne($insertedId);
+            return $row;
+        }
+        return false;
+    }
+
     function updateOne($body){ //...TODO updateWhere
         $set = "";
         $valuesToBind = array();
         $id = $body["Id_$this->table"];
-        unset($body["Id_$this->table"]);
+        if(isset($body["Id_$this->table"])){
+            unset($body["Id_$this->table"]);
+        }
         foreach($body as $k=>$v){
             $set .= $k."=?,";
             array_push($valuesToBind,$v);
@@ -121,6 +140,24 @@ class DatabaseService
         $sql = "UPDATE $this->table SET $set WHERE $where";
         $resp = $this->query($sql, $valuesToBind);
         if($resp->result){
+            $row = $this->selectOne($id);
+            return $row;
+        }
+        return false;
+    }
+
+    function updateOneV2($body){ //Version condensée
+        $id = $body["Id_$this->table"];
+        $where = "Id_$this->table = ?";
+        if(isset($body["Id_$this->table"])){
+            unset($body["Id_$this->table"]);
+        }
+        $set = implode(",", array_map(function ($item){ return $item."=?"; }, array_keys($body)));
+        $valuesToBind = array_values($body);
+        array_push($valuesToBind,$id);
+        $sql = "UPDATE $this->table SET $set WHERE $where";
+        $resp = $this->query($sql, $valuesToBind);
+        if($resp->result && $resp->statment->rowCount() <= 1){
             $row = $this->selectOne($id);
             return $row;
         }
