@@ -164,6 +164,18 @@ class DatabaseService
         return false;
     }
 
+    function deleteOne($body){
+        $id = $body["Id_$this->table"];
+        $where = "Id_$this->table = ?";
+        $sql = "DELETE FROM $this->table WHERE $where";
+        $resp = $this->query($sql, [$id]);
+        if($resp->result && $resp->statment->rowCount() <= 1){
+            $row = $this->selectOne($id);
+            return !isset($row);
+        }
+        return false;
+    }
+
 }
 
 ?>

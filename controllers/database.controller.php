@@ -149,7 +149,9 @@ abstract class DatabaseController
     }
 
     public function hardDelete($id){
-        return "Delete (hard) row with id = $id in table $this->table";
+        $dbs = new DatabaseService($this->table);
+        $row = $dbs->deleteOne(["Id_$this->table" => $id]);
+        return $row;
     }
 }
 
