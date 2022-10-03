@@ -12,7 +12,11 @@ public function __construct($params)
 
 public function login(){
     $dbs = new DatabaseService("account");
-    $accounts = $dbs->selectWhere("login = ? AND is_deleted = ?",[$this->body['login'], 0]);
+    $email = filter_var($this->body['login'], FILTER_SANITIZE_EMAIL);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ["result" => false];
+    }
+    $accounts = $dbs->selectWhere("login = ? AND is_deleted = ?", [$email, 0]);
     if(count($accounts) == 1 && $accounts[0]->password == $this->body['password']){
        $dbs = new DatabaseService("appUser");
        $appUser = $dbs->selectOne($accounts[0]->Id_appUser);
