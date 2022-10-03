@@ -111,7 +111,7 @@ class DatabaseService
             unset($body["Id_$this->table"]);
         }
         $columns = implode(",", array_keys($body));
-        $values = implode(",", array_map(function (){ return "?"; },$body));
+        $values = implode(",", array_map(function (){ return "?"; }, $body));
         $valuesToBind = array_values($body);
         $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
         $resp = $this->query($sql, $valuesToBind);
