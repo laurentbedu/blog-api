@@ -17,12 +17,15 @@ public function login(){
         return ["result" => false];
     }
     $accounts = $dbs->selectWhere("login = ? AND is_deleted = ?", [$email, 0]);
-    if(count($accounts) == 1 && $accounts[0]->password == $this->body['password']){
+    $prefix = $_ENV['config']->hash->prefix;
+    if(count($accounts) == 1 && password_verify($this->body['password'], $prefix . $accounts[0]->password)){
        $dbs = new DatabaseService("appUser");
        $appUser = $dbs->selectOne($accounts[0]->Id_appUser);
        return ["result" => true, "role" => $appUser->Id_role];
     }
     return ["result" => false];
 }
+
+
 
 }?>
