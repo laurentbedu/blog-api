@@ -10,8 +10,10 @@
     else if($_ENV["current"] == "prod"){
         $origin = "http://nomdedomaine.com";
     }
-    
     header("Access-Control-Allow-Origin: $origin");
+
+    header('Access-Control-Allow-Headers: Authorization');
+    header("Access-Control-Allow-Credentials: true");
     
     header("Access-Control-Allow-Methods: *");
     if($_SERVER['REQUEST_METHOD'] == "OPTIONS"){
@@ -21,6 +23,7 @@
 
     require_once 'services/database.service.php';
     require_once 'controllers/database.controller.php';
+    require_once('vendor/autoload.php');
 
     $route = trim($_SERVER["REQUEST_URI"], '/');
     $route = filter_var($route, FILTER_SANITIZE_URL);
