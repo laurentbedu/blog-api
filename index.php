@@ -50,6 +50,8 @@
         die;
     }
 
+    
+
     $controllerFilePath = "controllers/$controllerName.controller.php";
     if(!file_exists($controllerFilePath)){
         header('HTTP/1.0 404 Not Found');
