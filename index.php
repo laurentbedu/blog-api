@@ -28,6 +28,9 @@
     $route = trim($_SERVER["REQUEST_URI"], '/');
     $route = filter_var($route, FILTER_SANITIZE_URL);
     $route = explode('/', $route);
+    // if($_SERVER['HTTP_HOST'] == 'localhost'){
+    //     array_shift($route);
+    // }
 
     $controllerName = array_shift($route);
 
@@ -50,7 +53,13 @@
         die;
     }
 
-    
+    require_once 'middlewares/auth.middleware.php';
+    $req = $_SERVER['REQUEST_METHOD'] . "/" . trim($_SERVER["REQUEST_URI"], '/');
+    // if($_SERVER['HTTP_HOST'] == 'localhost'){
+    //     $req = str_replace('/blog-api','',$req);
+    // }
+    $am = new AuthMiddleware($req);
+    $am->verify();
 
     $controllerFilePath = "controllers/$controllerName.controller.php";
     if(!file_exists($controllerFilePath)){

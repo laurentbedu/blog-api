@@ -6,7 +6,7 @@ abstract class DatabaseController
     {
         $id = array_shift($params);
         $this->action = null;
-
+        
         if(isset($id) && !ctype_digit($id)){
             return $this;
         }

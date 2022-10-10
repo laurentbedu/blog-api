@@ -28,7 +28,7 @@ public function login(){
        $dbs = new DatabaseService("appUser");
        $appUser = $dbs->selectOne($accounts[0]->Id_appUser);
         
-       $secretKey = $_ENV['config']->jwt->secret;
+        $secretKey = $_ENV['config']->jwt->secret;
         $issuedAt = time();
         $expireAt = $issuedAt + 60 * 60 * 24;
         $serverName = "blog.api";
@@ -43,31 +43,35 @@ public function login(){
             'userId' => $userId
         ];
         $token = JWT::encode($requestData, $secretKey, 'HS512');
-
-       return ["result" => true, "role" => $appUser->Id_role, "token" => $token];
+        return ["result" => true, "role" => $appUser->Id_role, "id" => $appUser->Id_appUser, "token" => $token];
     }
     return ["result" => false];
 }
 
-public function check(){
+public function check() {
     $headers = apache_request_headers();
-    $token = $headers["Authorization"];
+    if (isset($headers["Authorization"])) {
+        $token = $headers["Authorization"];
+    }
+    // if(isset($_COOKIE['blog'])){
+    //     $token = $_COOKIE['blog'];
+    // }
     $secretKey = $_ENV['config']->jwt->secret;
-    if(!empty($token)){
-        try{
+    if (isset($token) && !empty($token)) {
+        try {
             $payload = JWT::decode($token, new Key($secretKey, 'HS512'));
-        }catch(Exception $e){
+        } catch (Exception $e) {
             $payload = null;
         }
         if (isset($payload) &&
             $payload->iss === "blog.api" &&
             $payload->nbf < time() &&
-            $payload->exp > time())
-        {
-            return ["result" => true, "role" => $payload->userRole];
+            $payload->exp > time()) {
+           
+            return ["result" => true, "role" => $payload->userRole, "id" => $payload->userId];
         }
     }
     return ["result" => false];
 }
 
-}?>
+}
