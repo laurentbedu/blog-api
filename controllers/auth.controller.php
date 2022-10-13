@@ -144,4 +144,30 @@ public function validate(){
     return ['result'=>false];
 }
 
+public function create(){
+    $dbs = new DatabaseService("appUSer");
+    $user = $dbs->insertOne(["pseudo"=>$this->body["pseudo"], "is_deleted"=>0, "Id_role"=>2]);
+    if($user){
+        
+        $password = password_hash($this->body["pass"], PASSWORD_ARGON2ID, [
+            'memory_cost' => 1024,
+            'time_cost' => 2,
+            'threads' => 2
+        ]);
+        $prefix = $_ENV['config']->hash->prefix;
+        $password = str_replace($prefix, "", $password);
+
+        $dbs = new DatabaseService("account");
+        $account = $dbs->insertOne(
+            ["login"=>$this->body["login"],
+            "is_deleted"=>0,
+            "password"=>$password,
+            "Id_appUser"=> $user->Id_appUser ]);
+        if($account){
+            return ["result"=>true];
+        }
+    }
+    return ["result"=>false];
+}
+
 }
