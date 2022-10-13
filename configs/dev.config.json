@@ -23,8 +23,8 @@
             "port": 587,
             "auth": true,
             "secure": "tls",
-            "user": "bedulaurent@gmail.com",
-            "pass": "mnjacmkwnzexgvtr"
+            "user": "",
+            "pass": ""
         }
     }
 }
