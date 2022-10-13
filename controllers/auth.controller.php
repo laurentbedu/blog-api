@@ -8,6 +8,7 @@ class AuthController {
 public function __construct($params)
 {
     $this->method = array_shift($params);
+    $this->params = $params;
 
     $request_body = file_get_contents('php://input');
     $this->body = $request_body ? json_decode($request_body, true) : null;
@@ -72,6 +73,75 @@ public function check() {
         }
     }
     return ["result" => false];
+}
+
+public function register(){
+    $dbs = new DatabaseService("account");
+    $accounts = $dbs->selectWhere("login = ?", [$this->body['email']]);
+    if(count($accounts) > 0){
+        return ['result'=>false, 'message'=>'email '.$this->body['email'].' already used'];
+    }
+    $dbs = new DatabaseService("appUser");
+    $users = $dbs->selectWhere("pseudo = ?", [$this->body['pseudo']]);
+    if(count($users) > 0){
+        return ['result'=>false, 'message'=>'pseudo '.$this->body['pseudo'].' already used'];
+    }
+
+    $secretKey = $_ENV['config']->jwt->secret;
+    $issuedAt = time();
+    $expireAt = $issuedAt + 60 * 60 * 1;
+    $serverName = "blog.api";
+    $pseudo = $this->body['pseudo'];
+    $login =  $this->body['email'];
+    $requestData = [
+        'iat'  => $issuedAt,
+        'iss'  => $serverName,
+        'nbf'  => $issuedAt,
+        'exp'  => $expireAt,
+        'pseudo' => $pseudo,
+        'login' => $login
+    ];
+    $token = JWT::encode($requestData, $secretKey, 'HS512');
+    
+    $href = "http://localhost:3000/account/validate/$token";
+
+    $ms = new MailerService();
+    $mailParams = [
+        "fromAddress" => ["register@monblog.com","nouveau compte monblog.com"],
+        "destAddresses" => [$login],
+        "replyAddress" => ["noreply@monblog.com", "No Reply"],
+        "subject" => "Créer votre compte nomblog.com",
+        "body" => 'Click to validate the account creation <br>
+                    <a href="'.$href.'">Valider</a> ',
+        "altBody" => "Go to $href to validate the account creation"
+    ];
+    $sent = $ms->send($mailParams);
+    return ['result'=>$sent['result'], 'message'=> $sent['result'] ?
+        "Vérifier votre boîte mail et confirmer la création de votre compte sur monblog.com" :
+        "Une erreur est survenue, veuiller recommencer l'inscription"];
+}
+
+public function validate(){
+    $token = $this->body['token'] ?? "";
+        
+    if(isset($token) && !empty($token)){
+        $secretKey = $_ENV['config']->jwt->secret;
+        try{
+            $payload = JWT::decode($token, new Key($secretKey, 'HS512'));
+        }catch(Exception $e){
+            $payload = null;
+        }
+        if (isset($payload) &&
+                $payload->iss === "blog.api" &&
+                $payload->nbf < time() &&
+                $payload->exp > time())
+        {
+            $pseudo = $payload->pseudo;
+            $login =  $payload->login;
+            return ["result"=>true, "pseudo"=>$pseudo, "login"=>$login];
+        }
+    }
+    return ['result'=>false];
 }
 
 }

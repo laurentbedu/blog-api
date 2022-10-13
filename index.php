@@ -23,7 +23,8 @@
 
     require_once 'services/database.service.php';
     require_once 'controllers/database.controller.php';
-    require_once('vendor/autoload.php');
+    require_once 'vendor/autoload.php';
+    require_once 'services/mailer.service.php';
 
     $route = trim($_SERVER["REQUEST_URI"], '/');
     $route = filter_var($route, FILTER_SANITIZE_URL);
